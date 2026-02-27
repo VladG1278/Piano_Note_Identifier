@@ -65,7 +65,7 @@ def click_note(note, accidental=None):
 def save_file(name):
     num = input("Write a number for note value or type x to stop: ")
     search = True
-    path_Name = (name + "_" + num)
+    path_Name = ("Screenshots/" + name + "_" + num)
     file_path = Path(path_Name)
     while search and num != "x":
         if file_path.is_file():
@@ -73,7 +73,7 @@ def save_file(name):
             search = False
         else:
             canvas = driver.find_element(By.TAG_NAME, "canvas")
-            canvas.screenshot("Screenshots/" + path_Name + ".png")
+            canvas.screenshot(path_Name + ".png")
             search = False
 
 
