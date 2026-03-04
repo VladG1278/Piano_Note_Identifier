@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+
 # Options for driver (headless = do not show window) (detach = keep window open after program ends)
 options = Options()
 # options.add_argument('--headless=new')
@@ -65,11 +66,11 @@ def click_note(note, accidental=None):
 def save_file(name):
     num = input("Write a number for note value or type x to stop: ")
     search = True
-    path_Name = ("Screenshots/" + name + "_" + num)
-    file_path = Path(path_Name)
+    path_Name = ("Screenshots\\" + name + "_" + num)
+    file_path = Path(path_Name + '.png')
     while search and num != "x":
-        if file_path.is_file():
-            num = input("That screenshot already exists.")
+        if file_path.exists():
+            print("That screenshot already exists.")
             search = False
         else:
             canvas = driver.find_element(By.TAG_NAME, "canvas")
@@ -83,18 +84,25 @@ def getScreenshots ():
     while note_input !='x':
         note_input = input("Note: ")
         filtered = filterInputNote(note_input)
-        if not filtered[1]:
+        while not filtered[1]:
             note_input = input("That was an incorrect note: ")
+            filtered = filterInputNote(note_input)
             #driver.close()
         else:
             save_file(note_input)
-            print(filtered)
 
             # If note is not an accidental then filtered[0][1] does not exist and throws an error
             try:
                 click_note(filtered[0][0], filtered[0][1])
             except:
                 click_note(filtered[0][0])
+        numFiles('Screenshots')
 
+
+# Counts the files in a directory (for max range on grand staff should be 37)
+def numFiles(directoryName):
+    search_path = Path('./' + directoryName)
+    n_files = len([p for p in search_path.iterdir() if p.is_file()])
+    print(f'Number of files: {n_files}')
 
 getScreenshots()
