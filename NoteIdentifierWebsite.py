@@ -68,7 +68,15 @@ def click_note(note, accidental=None):
 def save_file(name):
     num = input("Write a number for note value or type x to stop: ")
     search = True
-    path_Name = ("Screenshots\\" + name + "_" + num)
+    if len(name) > 1:
+        if name[1] == '#':
+            name[1] = "S"
+        elif name[1] == "b":
+            None
+        else:
+            print("Invalid accidental")
+            search = False
+    path_Name = ("Screenshots\\" + name[0] + "_" + num)
     file_path = Path(path_Name + '.png')
     while search and num != "x":
         if file_path.exists():
@@ -101,11 +109,60 @@ def getScreenshots():
         numFiles('Screenshots')
 
 
-# Counts the files in a directory (for max range on grand staff should be 37)
+# Counts the files in a directory (for max range on grand staff should be 37 with no accidentals, 85 with accidentals)
 def numFiles(directoryName):
     search_path = Path('./' + directoryName)
     n_files = len([p for p in search_path.iterdir() if p.is_file()])
     print(f'Number of files: {n_files}')
 
 
+# adds 1 to the screenshots names to fix the original naming mistake
+def fixScreenshotNames():
+    folder = Path("./Screenshots")
+    files = sorted(folder.iterdir(), reverse=True)
+    for file in files:
+        if file.is_file():
+            parts = file.stem.split("_")
+            if parts[-1].isdigit():
+                number = int(parts[-1]) + 1
+                prefix = "_".join(parts[:-1])
+                new_name = f"{prefix}_{number}{file.suffix}"
+                file.rename(file.with_name(new_name))
+
+
+# Makes a midi dictionary where the file name is a ket to the midi value
+# Generated with chatgpt
+def generateMidiDict():
+    notes_sharp = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+    notes_flat = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+    midi_dict = {}
+
+    for midi in range(33, 93):  # A1 (33) to G#6 (92)
+        octave = (midi // 12) - 1
+        i = midi % 12
+        sharp_name = notes_sharp[i]
+        flat_name = notes_flat[i]
+
+        def format_key(name):
+            if "#" in name:
+                n = name[0]
+                return f"{n}_{octave}S"
+            elif "b" in name:
+                n = name[0]
+                return f"{n}_{octave}b"
+            else:
+                return f"{name}_{octave}"
+
+        midi_dict[format_key(sharp_name)] = midi
+        # add flat equivalent if different
+        if flat_name != sharp_name:
+            midi_dict[format_key(flat_name)] = midi
+    return midi_dict
+
+
+# Saves a temporary screenshot of the current note value on screen and compares it to the already existing
+# screenshots in the folder.
+def checkScreenshot():
+    name = None
+    return name
 

@@ -59,8 +59,7 @@ checkFileExists:
 
 Note Naming:
 
-
-Starting from F0 going to G6 (Each c increase number by one)
+Starting from A1 going to G6 (Each c increase number by one)
 G6
 F6
 E6
@@ -74,4 +73,29 @@ E4
 D4
 C4
 B3
+
+
+checkScreenshot():
+	takes screenshot of canvas
+	compares temp screenshot to everything else in screenshots
+	delete temp screenshot
+	return fileName = note_height or False if not found (meaning the note screenshot does not exist)
+
+runGame():
+	checkScreenshot()
+	wait for piano input (not sure how this works yet, need to use piano to test first)
+	convert the File name to match midi input, (maybe a function with a big dictionary)
+	check if piano input = midi input
+		if just note: print(Note is correct, but you clicked the wrong octave)
+		if note and octave: click button
+		if incorrect note: click incorrect button
+
+fileName to midi input: 
+	dictionary for file name to number
+	
+
+
+
+
+
 
