@@ -5,7 +5,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-
 # Options for driver (headless = do not show window) (detach = keep window open after program ends)
 options = Options()
 # options.add_argument('--headless=new')
@@ -14,7 +13,6 @@ options = Options()
 # save browsing data so the user only has to select options once (way easier than coding the setting clicking manually)
 options.add_argument(r"user-data-dir=C:\Users\V\selenium_profile")
 
-
 # initialize driver and open link
 driver = webdriver.Chrome(options=options)
 driver.get("https://www.musictheory.net/exercises/note")
@@ -22,20 +20,20 @@ driver.get("https://www.musictheory.net/exercises/note")
 
 # checks if the note input is in the format noteAccidental (eg. C#) not (#C) maybe fix this later
 # returns a tuple of the form (input, Boolean for a good input)
-def filterInputNote(input):
+def filterInputNote(inputNote):
     noteList = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
-    input = "".join(input.split()).capitalize()
-    if len(input) > 2 or len(input) < 1:
+    inputNote = "".join(inputNote.split()).capitalize()
+    if len(inputNote) > 2 or len(inputNote) < 1:
         print("The input should be 2 or 1 characters long")
-        return input, False
-    if input[0] not in noteList:
+        return inputNote, False
+    if inputNote[0] not in noteList:
         print("This is not an existing note")
-        return input, False
-    if len(input) > 1:
-        if not (input[1] == "#" or input[1] == "b"):
+        return inputNote, False
+    if len(inputNote) > 1:
+        if not (inputNote[1] == "#" or inputNote[1] == "b"):
             print("This accidental is not accepted")
-            return input + " ", False
-    return input, True
+            return inputNote + " ", False
+    return inputNote, True
 
 
 # finds the correct x-path to one of the note buttons on the webpage
@@ -54,9 +52,13 @@ def click_note(note, accidental=None):
         and .//span[contains(text(),'{note}')]
         and .//span[contains(@class,'use-theory-font') and contains(text(),'{accidental}')]]
         """
-
-    element = driver.find_element(By.XPATH, xpath)
-    element.click()
+    try:
+        element = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, xpath))
+        )
+        element.click()
+    except Exception as e:
+        print(f"A setting button error occurred: {e}")
 
 
 # Save screenshot file to "Screenshots" directory
@@ -79,15 +81,15 @@ def save_file(name):
 
 
 # Loop to run through program to manually save screenshots
-def getScreenshots ():
+def getScreenshots():
     note_input = None
-    while note_input !='x':
+    while note_input != 'x':
         note_input = input("Note: ")
         filtered = filterInputNote(note_input)
         while not filtered[1]:
             note_input = input("That was an incorrect note: ")
             filtered = filterInputNote(note_input)
-            #driver.close()
+
         else:
             save_file(note_input)
 
@@ -105,4 +107,5 @@ def numFiles(directoryName):
     n_files = len([p for p in search_path.iterdir() if p.is_file()])
     print(f'Number of files: {n_files}')
 
-getScreenshots()
+
+

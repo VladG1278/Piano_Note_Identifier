@@ -34,6 +34,9 @@ to reconfigure every time.
 #     print(f"A setting button error occurred: {e}")
 
 
+OR: 
+# element = driver.find_element(By.XPATH, xpath)
+# element.click()
 
 
 New Idea: since identifying the octave the note is using a program seems complicated, just webscrape all the possible note configurations from the website screenshots,
