@@ -1,4 +1,6 @@
 from pathlib import Path
+from PIL import Image
+import numpy as np
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -65,7 +67,7 @@ def click_note(note, accidental=None):
 # Only used once to gather initial screenshots
 # Manual naming to identify notes
 # name is the note that was inputted earlier
-def save_file(name):
+def save_file(name, saveLocation):
     num = input("Write a number for note value or type x to stop: ")
     search = True
     if len(name) > 1:
@@ -76,7 +78,7 @@ def save_file(name):
         else:
             print("Invalid accidental")
             search = False
-    path_Name = ("Screenshots\\" + name[0] + "_" + num)
+    path_Name = (saveLocation+"\\" + name[0] + "_" + num)
     file_path = Path(path_Name + '.png')
     while search and num != "x":
         if file_path.exists():
@@ -90,6 +92,10 @@ def save_file(name):
 
 # Loop to run through program to manually save screenshots
 def getScreenshots():
+    note_type = input("What type of note will be saved?\n(ex.whole, half ,quarter: ")
+    if not Path("./Screenshots_" + note_type).exists():
+        Path("Screenshots_" + note_type).mkdir()
+    savelocation = "./Screenshots_" + note_type
     note_input = None
     while note_input != 'x':
         note_input = input("Note: ")
@@ -99,14 +105,14 @@ def getScreenshots():
             filtered = filterInputNote(note_input)
 
         else:
-            save_file(note_input)
+            save_file(note_input, savelocation)
 
             # If note is not an accidental then filtered[0][1] does not exist and throws an error
             try:
                 click_note(filtered[0][0], filtered[0][1])
             except:
                 click_note(filtered[0][0])
-        numFiles('Screenshots')
+        numFiles(savelocation)
 
 
 # Counts the files in a directory (for max range on grand staff should be 37 with no accidentals, 85 with accidentals)
@@ -163,6 +169,42 @@ def generateMidiDict():
 # Saves a temporary screenshot of the current note value on screen and compares it to the already existing
 # screenshots in the folder.
 def checkScreenshot():
-    name = None
-    return name
+    # save temp screenshot of current canvas:
+    driver.find_element(By.TAG_NAME, "canvas").screenshot("./temp.png")
 
+    # Compare images in file
+    # https://cloudinary.com/guides/image-effects/beginners-guide-to-image-comparison-in-python
+    tempImage = np.array(Image.open('./temp.png'))
+
+    # loop variables
+    sameImage = False
+    files = list(Path("./Screenshots").iterdir())
+    fileNum = 0
+
+    # loops until image is the same or the file index gets too large and throws an error
+    while not sameImage:
+        try:
+            savedRefImg = np.array(Image.open(files[fileNum]))
+        except:
+            break
+        # Check if the shapes are the same and pixels are identical
+        if tempImage.shape == savedRefImg.shape and np.all(tempImage == savedRefImg):
+            sameImage = True
+        else:
+            fileNum +=1
+
+    # delete temp img
+    if Path("./temp.png").exists():
+        Path("./temp.png").unlink()
+    if sameImage:
+        return files[fileNum].stem
+    else:
+        return "The screenshot does not match any existing imgs"
+
+
+
+
+# current problem: screenshots with different note values (whole vs half vs quarter, etc.)
+# in the future different directories with images for each note value to compare
+
+getScreenshots()

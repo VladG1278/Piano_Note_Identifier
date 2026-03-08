@@ -44,7 +44,7 @@ manually identify each one, and then make a UI.
 Or use the previously known screenshots to compare against the websites UI.
 
 
-Can switch between screenshot options by using "challenge mode" and just continuing until we run out of matches. There should be ~37 images if I can count correctly.
+Can switch between screenshot options by using "challenge mode" and just continuing until we run out of matches. There should be 37 images if I can count correctly.
 
 
 checkFileExists:
