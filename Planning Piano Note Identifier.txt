@@ -92,7 +92,11 @@ runGame():
 
 fileName to midi input: 
 	dictionary for file name to number
-	
+
+
+
+probably most efficient way to compare images is to take the note input first and only compare the files
+that start with that note (ex. input C#) only check files with C_S in the name
 
 
 

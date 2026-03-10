@@ -60,7 +60,7 @@ def click_note(note, accidental=None):
         )
         element.click()
     except Exception as e:
-        print(f"A setting button error occurred: {e}")
+        print(f"A button click error occured: {e}")
 
 
 # Save screenshot file to "Screenshots" directory
@@ -74,11 +74,11 @@ def save_file(name, saveLocation):
         if name[1] == '#':
             name[1] = "S"
         elif name[1] == "b":
-            None
+            pass
         else:
             print("Invalid accidental")
             search = False
-    path_Name = (saveLocation+"\\" + name[0] + "_" + num)
+    path_Name = (saveLocation + "\\" + name + "_" + num)
     file_path = Path(path_Name + '.png')
     while search and num != "x":
         if file_path.exists():
@@ -136,7 +136,7 @@ def fixScreenshotNames():
                 file.rename(file.with_name(new_name))
 
 
-# Makes a midi dictionary where the file name is a ket to the midi value
+# Returns a midi dictionary where the file name is a ket to the midi value
 # Generated with chatgpt
 def generateMidiDict():
     notes_sharp = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
@@ -152,23 +152,30 @@ def generateMidiDict():
         def format_key(name):
             if "#" in name:
                 n = name[0]
-                return f"{n}_{octave}S"
+                return f"{n}S_{octave}"
             elif "b" in name:
                 n = name[0]
-                return f"{n}_{octave}b"
+                return f"{n}b_{octave}"
             else:
                 return f"{name}_{octave}"
 
-        midi_dict[format_key(sharp_name)] = midi
-        # add flat equivalent if different
+        sharp_key = format_key(sharp_name)
+        flat_key = format_key(flat_name)
+
+        if midi not in midi_dict:
+            midi_dict[midi] = []
+
+        midi_dict[midi].append(sharp_key)
+
         if flat_name != sharp_name:
-            midi_dict[format_key(flat_name)] = midi
+            midi_dict[midi].append(flat_key)
+
     return midi_dict
 
 
 # Saves a temporary screenshot of the current note value on screen and compares it to the already existing
 # screenshots in the folder.
-def checkScreenshot():
+def checkScreenshot(noteName):
     # save temp screenshot of current canvas:
     driver.find_element(By.TAG_NAME, "canvas").screenshot("./temp.png")
 
@@ -178,33 +185,67 @@ def checkScreenshot():
 
     # loop variables
     sameImage = False
-    files = list(Path("./Screenshots").iterdir())
-    fileNum = 0
+    print(noteName)
+    folders = [p for p in Path("./").glob("Screenshots*") if p.is_dir()]
+    print(folders)
+    for folder in folders:
+        files = list(folder.iterdir())
+        for file in files:
+            print(noteName in str(file))
+            if noteName not in str(file):
+                continue
+            try:
+                savedRefImg = np.array(Image.open(file))
+            except:
+                break
 
-    # loops until image is the same or the file index gets too large and throws an error
-    while not sameImage:
-        try:
-            savedRefImg = np.array(Image.open(files[fileNum]))
-        except:
-            break
-        # Check if the shapes are the same and pixels are identical
-        if tempImage.shape == savedRefImg.shape and np.all(tempImage == savedRefImg):
-            sameImage = True
-        else:
-            fileNum +=1
+            # Check if the shapes are the same and pixels are identical
+            print(tempImage.shape, savedRefImg.shape)
+            print(np.all(tempImage == savedRefImg))
+            if tempImage.shape == savedRefImg.shape and np.all(tempImage == savedRefImg):
+                sameImage = True
+                break
+        if sameImage:
+            return file.stem.replace("S", "#")
 
     # delete temp img
     if Path("./temp.png").exists():
         Path("./temp.png").unlink()
-    if sameImage:
-        return files[fileNum].stem
-    else:
-        return "The screenshot does not match any existing imgs"
+    return False
 
 
+# runs the actual "game" while taking inputs from the pianoInput function
+def run():
+    midi_dict = generateMidiDict()
+    print(midi_dict)
+    while True:
+        midi_value = pianoInput()
+        if midi_value == 21:
+            break
+        correctOctave = True
+        noteNames = midi_dict[midi_value]
+        result = False
+        for noteName in noteNames:
+            note_value = noteName.split('_')
+            result = checkScreenshot(note_value[0])
+            print(note_value, result)
+            if result:
+                if note_value[0] == result.split('_')[0] and note_value[1] != result.split('_')[1]:
+                    print("You clicked the right note, but in the wrong octave. Please try a different octave!")
+                    correctOctave = False
+                    break
+        if correctOctave:
+            try:
+                click_note(note_value[0][0], note_value[0][1])
+            except:
+                click_note(note_value[0][0])
+
+        # check if note value is correct but not right octave
 
 
-# current problem: screenshots with different note values (whole vs half vs quarter, etc.)
-# in the future different directories with images for each note value to compare
+# takes an input from the keyboard and returns its midi value as an int
+def pianoInput():
+    return int(input("Midi_Value: "))
 
-getScreenshots()
+
+run()
