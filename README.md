@@ -1,0 +1,2 @@
+An attempt to display chords and notes on a grand staff which can be played on a digital keyboard and checked by the program. Currently brainstorming a new method of solving this. I don't like how the original overcomplicated
+obtaining notes. I think it'd be easier to make my own UI without scraping images, and making my own UI would allow for more versatility when developing chords or any other features I would like to add.
